@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<modification>
+	<id><![CDATA[Extra Brochure]]></id>
+	<version><![CDATA[1.0]]></version>
+	<vqmver><![CDATA[2.5.1]]></vqmver>
+	<author><![CDATA[mash0028]]></author>
+
+	<file name="catalog/controller/checkout/cart.php">
+		<operation>
+			<search position="before"><![CDATA[
+				$data['reward'] = $this->load->controller('checkout/reward');]]></search>
+			<add><![CDATA[
+				$data['giftwrap'] = $this->load->controller('checkout/giftwrap');
+			]]></add>
+		</operation>
+	</file>
+
+	<file name="catalog/view/theme/*/template/checkout/cart.tpl">
+		<operation>
+			<search position="replace"><![CDATA[|| $shipping ]]></search>
+			<add><![CDATA[|| $shipping || $giftwrap ]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[<?php echo $shipping; ?>]]></search>
+			<add><![CDATA[<?php echo $shipping; ?><?php echo $giftwrap; ?>]]></add>
+		</operation>
+
+	</file>
+<file path="catalog/controller/checkout/cart.php">
+		<operation>
+			<search><![CDATA[public function add() {]]></search>
+			<add position="before">
+			 <![CDATA[
+				public function removeGiftwrap() {
+					if(isset($this->session->data['giftwrap'])) {
+					
+						$this->load->language('total/giftwrap');
+					
+						unset($this->session->data['giftwrap']);
+						
+						$this->session->data['success'] = $this->language->get('text_remove_giftwrap');
+						
+						$this->response->redirect($this->url->link('checkout/cart', '', 'SSL'));
+					}
+				}
+			
+			 ]]>
+			</add>	
+		</operation>
+		
+
+		<operation>
+	      	<search><![CDATA[$data['totals'][] = array(]]></search>
+	      	<add position="before"><![CDATA[
+				if(isset($total['remove'])) {
+					$remove = $total['remove'];
+				} else {
+					$remove = '';
+				}
+			]]></add>
+    	</operation>
+		
+		<operation>
+	      	<search><![CDATA['text'  => $this->currency->format($total['value'])]]></search>
+	      	<add position="replace"><![CDATA[
+				'text'  => $this->currency->format($total['value']),
+				'remove' => $remove
+			]]></add>
+    	</operation>
+		
+	</file>		
+	
+	
+	<file path="catalog/view/theme/*/template/checkout/cart.tpl">
+    	<operation>
+	      	<search><![CDATA[<td><strong><?php echo $total['title']; ?>:</strong></td>]]></search>
+	      	<add position="replace"><![CDATA[
+				<td><strong><?php if(isset($total['remove']) && $total['remove']) { ?> <a href="<?php echo $total['remove']; ?>" data-toggle="tooltip" title="Removed"> <i class="fa fa-trash-o"></i></a> <?php } ?> &nbsp;<?php echo $total['title']; ?>:</strong></td>
+	      		
+	      	]]></add>
+    	</operation>
+  	</file>
+		
+</modification>
